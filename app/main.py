@@ -13,6 +13,12 @@ class Incident(BaseModel):
     priority:int
     id:Optional[int] = None
 
+class Post(BaseModel):
+    title:str
+    content:str
+    id:Optional[int] = None
+
+
 app = FastAPI()
 
 maxattempts = 5
@@ -139,7 +145,7 @@ def create_incident():
     return {'data':posts}
 
 @app.get("/posts/{id}")
-def get_post_by_id(id:int,response:Response):
+def get_post_by_id(id:int):
 # def get_incident(id:int):
     cursor.execute(f"""SELECT * FROM posts WHERE id={id}""")    
     posts= cursor.fetchone()
@@ -149,3 +155,26 @@ def get_post_by_id(id:int,response:Response):
 
     else:
         return {'data':posts}
+    
+@app.post("/posts",status_code=status.HTTP_201_CREATED)
+def create_new_posts(payload:Post):
+    cursor.execute(""" INSERT INTO posts (title,content)
+                   VALUES (%s,%s) RETURNING *;""",(payload.title,payload.content))
+    posts = cursor.fetchall()
+    conn.commit()
+    if posts is None or len(posts)==0:
+        print("Unable to Add Post")
+        return 
+    else:
+        return {'data':posts}
+
+@app.delete("/posts/{id}",status_code=status.HTTP_204_NO_CONTENT)
+def delete_post(id:int):
+    cursor.execute("""DELETE FROM posts WHERE id=%s RETURNING *""",(id,))
+    deleted_post = cursor.fetchone()
+    print(deleted_post)
+    conn.commit()
+    if deleted_post is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"post with this id: {id} not found")
+    else:
+        return
