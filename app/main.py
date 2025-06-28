@@ -6,6 +6,7 @@ from typing import Optional
 import random
 import psycopg
 import time
+from app.Environment_variables import *
 class Incident(BaseModel):
     short_description:str
     description:str
@@ -19,10 +20,10 @@ retriedattempts = 1
 while retriedattempts<=maxattempts:
     try:
         conn = psycopg.connect(
-        host="localhost",
-        dbname="fastapi",
-        user="postgres",   # ✅ correct parameter name and spelling
-        password="Test@123",
+        host=dbhost,
+        dbname=dbname,
+        user=dbuser,   # ✅ correct parameter name and spelling
+        password=dbpass,
         row_factory=psycopg.rows.dict_row)
         cursor = conn.cursor()
         print("Database Connected successfully")
