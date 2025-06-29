@@ -17,6 +17,7 @@ class Post(BaseModel):
     title:str
     content:str
     id:Optional[int] = None
+    published:bool = True
 
 
 app = FastAPI()
@@ -178,3 +179,16 @@ def delete_post(id:int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"post with this id: {id} not found")
     else:
         return
+    
+
+@app.put("/posts/{id}")
+def update_post(payload:Post,id:int):
+    
+    cursor.execute("""UPDATE posts SET title=%s, content= %s, published=%s WHERE id=%s RETURNING *""",(payload.title,payload.content,payload.published,id))
+    updated_post =  cursor.fetchone()
+    conn.commit()
+    if updated_post is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"post with this id:{id} not found")
+    else:
+        
+        return {'data':updated_post}
