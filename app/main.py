@@ -4,7 +4,7 @@ from fastapi.params import Body
 import psycopg.rows
 from pydantic import BaseModel
 
-from typing import Optional
+from typing import Optional,List
 import random
 import psycopg
 import time
@@ -12,6 +12,7 @@ from app.Environment_variables import *
 
 from . import db_models,schemas
 from .database import engine, get_db
+from sqlalchemy.exc import IntegrityError
 
 db_models.Base.metadata.create_all(bind=engine)
 
@@ -140,7 +141,7 @@ def create_new_incident(id:int):
     
 
 
-@app.get("/posts")
+@app.get("/posts",response_model=schemas.PostGetList)
 def get_posts(db:Session = Depends(get_db)):
     # print(payload)
     # return {'data':'incident created successfully'}
@@ -153,6 +154,7 @@ def get_posts(db:Session = Depends(get_db)):
     print('get_posts Call Created query -> ',query)
     posts = query.all()
     return {'data':posts}
+    
 
 @app.get("/posts/{id}")
 def get_post_by_id(id:int,db:Session = Depends(get_db)):
@@ -171,7 +173,7 @@ def get_post_by_id(id:int,db:Session = Depends(get_db)):
     else:
         return {'data':posts}
     
-@app.post("/posts",status_code=status.HTTP_201_CREATED)
+@app.post("/posts",response_model=schemas.PostCreate,status_code=status.HTTP_201_CREATED)
 def create_new_posts(payload:schemas.PostCreate,db:Session = Depends(get_db)):
     #Retrieving posts from database using psycopg - RAW
     # cursor.execute(""" INSERT INTO posts (title,content)
@@ -191,7 +193,8 @@ def create_new_posts(payload:schemas.PostCreate,db:Session = Depends(get_db)):
         print("Unable to Add Post")
         return 
     else:
-        return {'data':posts}
+        # return {'data':posts}
+        return posts
 
 @app.delete("/posts/{id}",status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id:int,db:Session = Depends(get_db)):
@@ -228,4 +231,15 @@ def update_post(payload:schemas.PostUpdate,id:int,db:Session = Depends(get_db)):
         db.commit()
         db.refresh(updated_post)
         return {'data':updated_post}
-    
+
+@app.post("/users",response_model=schemas.UserCreateResponse,status_code=status.HTTP_201_CREATED)
+def create_new_posts(payload:schemas.UserCreate,db:Session = Depends(get_db)):
+    users = db_models.User(**payload.model_dump())
+    db.add(users)
+    try:
+        db.commit()
+        db.refresh(users)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="User with this email already exists.")
+    return {"usercreated":users}
