@@ -3,6 +3,7 @@ from app.database import get_db
 from app.utils import hash_password
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from app import oauth2
 
 router = APIRouter(
     tags=["Posts"],
@@ -42,7 +43,7 @@ def get_post_by_id(id:int,db:Session = Depends(get_db)):
         return {'data':posts}
     
 @router.post("/posts",response_model=schemas.PostCreate,status_code=status.HTTP_201_CREATED)
-def create_new_posts(payload:schemas.PostCreate,db:Session = Depends(get_db)):
+def create_new_posts(payload:schemas.PostCreate,db:Session = Depends(get_db),current_user = Depends(oauth2.get_current_user)):
     #Retrieving posts from database using psycopg - RAW
     # cursor.execute(""" INSERT INTO posts (title,content)
     #                VALUES (%s,%s) RETURNING *;""",(payload.title,payload.content))
@@ -51,6 +52,7 @@ def create_new_posts(payload:schemas.PostCreate,db:Session = Depends(get_db)):
 
     #Retrieving posts from database using SQLAlchemy ORM
     # posts = db_models.Post(title=payload.title,content=payload.content,published=payload.published)
+    print(f'{current_user.email=}')
 
     posts = db_models.Post(**payload.model_dump())
     db.add(posts)

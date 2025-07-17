@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field,EmailStr
+from datetime import datetime
 from typing import Optional, List
 
 class BaseSchemaModel(BaseModel):
@@ -38,5 +39,17 @@ class UserBase(BaseSchemaModel):
 class UserCreate(UserBase):
     password: str
 
-class UserCreateResponse(BaseSchemaModel):
-    usercreated: UserBase
+class UserResponse(UserBase):
+    id: int
+    created_at: datetime
+
+class UserLogin(BaseSchemaModel):
+    email: EmailStr = Field(..., description="Email of the user")
+    password: str = Field(..., description="Password of the user")
+
+class Token(BaseSchemaModel):
+    access_token: str
+    token_type: str = "bearer"
+
+class TokenData(BaseSchemaModel):
+    id: Optional[int] = None
