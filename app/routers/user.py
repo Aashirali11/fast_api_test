@@ -3,6 +3,8 @@ from app.database import get_db
 from app.utils import hash_password
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+
 
 router = APIRouter(
     tags=["Users"],

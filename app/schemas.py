@@ -27,6 +27,11 @@ class PostGetList(BaseSchemaModel):
     # It inherits from PostBase and can be extended with additional fields if needed
     data :List[PostBase]
 
+class PostResponse(PostBase):
+    id:int
+    created_at: datetime
+    owner_id: int
+
 class PostUpdate(PostBase):
     # This model is used for updating an existing post
     # It inherits from PostBase and can be extended with additional fields if needed
