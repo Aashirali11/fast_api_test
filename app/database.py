@@ -4,8 +4,8 @@ from sqlalchemy.orm import sessionmaker
 from app.config import settings
 
 
-# SQLALCHEMY_DATABASE_URL ="postgresql+psycopg://postgres:Test%40123@localhost:5432/fastapi"
-SQLALCHEMY_DATABASE_URL =f"postgresql+psycopg://{settings.dbuser}:{settings.dbpass}@{settings.dbhost}:5432/{settings.dbname}"
+SQLALCHEMY_DATABASE_URL = settings.postgres_connection_url
+# SQLALCHEMY_DATABASE_URL =f"postgresql+psycopg://{settings.dbuser}:{settings.dbpass}@{settings.dbhost}:5432/{settings.dbname}"
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
 SessionLocal = sessionmaker(autoflush=False,autocommit=False,bind=engine)

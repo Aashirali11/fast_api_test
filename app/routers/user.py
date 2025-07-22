@@ -4,6 +4,7 @@ from app.utils import hash_password
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from app import oauth2
 
 
 router = APIRouter(
@@ -30,7 +31,7 @@ def create_new_posts(payload:schemas.UserCreate,db:Session = Depends(get_db)):
 
 
 @router.get("/users/{id}",response_model=schemas.UserResponse)
-def get_user_by_id(id:int,db:Session = Depends(get_db)):
+def get_user_by_id(id:int,db:Session = Depends(get_db),current_user = Depends(oauth2.get_current_user)):
     user = db.query(db_models.User).filter(db_models.User.id == id).first()
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"user with this id:{id} not found")
